@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Purple AI Tic Tac Toe</title>
+
+<style>
+body{
+    font-family: Arial;
+    background: radial-gradient(circle at top,#2a004f,#0a0015);
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+}
+
+.container{
+    text-align:center;
+}
+
+.board{
+    display:grid;
+    grid-template-columns:repeat(3,90px);
+    gap:8px;
+    margin:20px auto;
+}
+
+.cell{
+    width:90px;
+    height:90px;
+    background:#1a0033;
+    border:2px solid #a855f7;
+    font-size:42px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+.cell:hover{
+    background:#2d0055;
+}
+
+.cell.pop{
+    transform:scale(1.15);
+}
+
+.win{
+    background:#7e22ce !important;
+    box-shadow:0 0 20px #c084fc;
+}
+
+.score{
+    display:flex;
+    justify-content:space-around;
+    margin-top:10px;
+}
+
+button{
+    margin-top:15px;
+    padding:8px 18px;
+    font-size:16px;
+    background:#7e22ce;
+    border:none;
+    color:white;
+    cursor:pointer;
+    border-radius:6px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+<h1>AI Tic Tac Toe</h1>
+
+<div class="score">
+<div>Player: <span id="playerScore">0</span></div>
+<div>AI: <span id="aiScore">0</span></div>
+</div>
+
+<h3 id="status">Your Turn</h3>
+
+<div class="board" id="board"></div>
+
+<button onclick="resetBoard()">Reset Board</button>
+</div>
+
+<script>
+
+let board = ["","","","","","","","",""];
+let player="X";
+let ai="O";
+let running=true;
+
+let playerScore=0;
+let aiScore=0;
+
+const winPatterns=[
+[0,1,2],[3,4,5],[6,7,8],
+[0,3,6],[1,4,7],[2,5,8],
+[0,4,8],[2,4,6]
+];
+
+const boardDiv=document.getElementById("board");
+
+function createBoard(){
+boardDiv.innerHTML="";
+board.forEach((_,i)=>{
+let cell=document.createElement("div");
+cell.classList.add("cell");
+cell.onclick=()=>playerMove(i);
+boardDiv.appendChild(cell);
+});
+}
+createBoard();
+
+function playerMove(i){
+if(!running||board[i]!="")return;
+
+placeMove(i,player);
+
+if(checkGame(player))return;
+
+setTimeout(aiMove,400);
+}
+
+function aiMove(){
+if(!running)return;
+
+let move=getBestMove();
+placeMove(move,ai);
+
+checkGame(ai);
+}
+
+function placeMove(i,symbol){
+board[i]=symbol;
+
+let cell=boardDiv.children[i];
+cell.innerText=symbol;
+
+cell.classList.add("pop");
+setTimeout(()=>cell.classList.remove("pop"),200);
+}
+
+function getBestMove(){
+
+for(let pattern of winPatterns){
+let vals=pattern.map(i=>board[i]);
+if(vals.filter(v=>v==ai).length==2 && vals.includes("")){
+return pattern[vals.indexOf("")];
+}
+}
+
+for(let pattern of winPatterns){
+let vals=pattern.map(i=>board[i]);
+if(vals.filter(v=>v==player).length==2 && vals.includes("")){
+return pattern[vals.indexOf("")];
+}
+}
+
+let empty=board.map((v,i)=>v==""?i:null).filter(v=>v!=null);
+return empty[Math.floor(Math.random()*empty.length)];
+}
+
+function checkGame(symbol){
+
+for(let pattern of winPatterns){
+if(pattern.every(i=>board[i]==symbol)){
+
+pattern.forEach(i=>{
+boardDiv.children[i].classList.add("win");
+});
+
+running=false;
+
+if(symbol==player){
+playerScore++;
+document.getElementById("playerScore").innerText=playerScore;
+document.getElementById("status").innerText="You Win!";
+}else{
+aiScore++;
+document.getElementById("aiScore").innerText=aiScore;
+document.getElementById("status").innerText="AI Wins!";
+}
+
+return true;
+}
+}
+
+if(!board.includes("")){
+running=false;
+document.getElementById("status").innerText="Draw!";
+return true;
+}
+
+return false;
+}
+
+function resetBoard(){
+board=["","","","","","","","",""];
+running=true;
+document.getElementById("status").innerText="Your Turn";
+createBoard();
+}
+
+</script>
+
+</body>
+</html>
